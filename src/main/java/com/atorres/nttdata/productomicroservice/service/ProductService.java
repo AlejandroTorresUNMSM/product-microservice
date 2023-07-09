@@ -10,7 +10,9 @@ import com.atorres.nttdata.productomicroservice.model.dao.ClientDao;
 import com.atorres.nttdata.productomicroservice.model.dao.CreditDao;
 import com.atorres.nttdata.productomicroservice.model.dao.ProductDao;
 import com.atorres.nttdata.productomicroservice.repository.ProductRepository;
+import com.atorres.nttdata.productomicroservice.utils.ProductType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import reactivefeign.spring.config.ReactiveFeignNamedContextFactory;
@@ -30,15 +32,6 @@ public class ProductService {
     @Autowired
     private WebClientMicroservice webClientMicroservice;
 
-
-    public Flux<ClientDao> findAllClient(){
-        return webClientMicroservice.getClients();
-    }
-
-    public Mono<ClientDao> findClientId(String id){
-        return webClientMicroservice.getClientById(id);
-    }
-
     public Flux<ProductDao> findAll(){
         return productRepository.findAll();
     }
@@ -47,9 +40,10 @@ public class ProductService {
         Flux<ClientDao> listClientDao = webClientMicroservice.getClients();
         //revisar que existan los clientes
         Mono<Boolean> existPersonal = listClientDao.any(clientDao -> clientDao.getId().equals(productPersonal.getClientId()) && clientDao.getTypeClient().equals("personal"));
-        //verificar que se cumpla las reglas de las cuentas
+        //verificar que se cumpla las reglas de las cuentas personales
+        Mono<Boolean> verifyAccount = this.verifyAccountPersonal(Flux.fromIterable(productPersonal.getAccountList()));
 
-       return existPersonal.flatMap(exist -> exist ?  Mono.just(new ProductDao()) :  Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"El client no existe o no es tipo personal")) );
+       return verifyAccount.flatMap(exist -> exist ?  productRepository.save(productMapper.productToproductDao(productPersonal)) :  Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"error error")) );
     }
 
     public Mono<ProductDao> createProductBussines(ProductPos productPos){
@@ -63,32 +57,23 @@ public class ProductService {
 
 
 
-        return Mono.just(new ProductDao());
+        return Mono.just(ProductDao.builder().build());
   }
 
-
-    private List<AccountDao> createAccount(ProductPos productPos){
-        return new ArrayList<>();
-    }
-
-    private List<CreditDao> createCredit(ProductPos productPos){
-        return new ArrayList<>();
-    }
-
-    /**
-    private void verifyClient(List<String> listId,Flux<ClientDao>  listClientDao){
-        Flux.fromIterable(listId)
-                .filter(id -> listClientDao.any(cliente -> Objects.equals(cliente.getId(), id)))
+    /**Funcion para clientes personal que revisa que el cliente tenga maximo una cuenta de cada tipo
+     *
+     * @param listAccount Listas de cuenta del request
+     * @return Retorna un true si cumple con los requisitos
+     */
+    private Mono<Boolean> verifyAccountPersonal(Flux<AccountDao> listAccount){
+        return   listAccount
+                .groupBy(AccountDao::getType)
+                .flatMap(group -> group.count().map(count -> Pair.of(group.key(), count)))
                 .collectList()
-                .doOnNext(idsFaltantes -> {
-                    if (!idsFaltantes.isEmpty()) {
-                        throw new RuntimeException("Los siguientes IDs no se encuentran en la lista de clientes totales: " + idsFaltantes);
-                    }
-                })
-                .block();
-    }**/
-    private Flux<AccountDao> verifyAccountPersonal(Flux<AccountDao> listAccount){
-        return listAccount;
+                .map(groups -> groups.size() <=3 && groups.size() >=1 && groups.stream().allMatch(pair -> pair.getSecond() == 1))
+                .filter(result -> result)
+                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"No se cumplen las condiciones requeridas para los tipos de cuenta personal")));
+
     }
 
     private void verifyClientBussines(List<String> listId,Flux<ClientDao>  listClientDao){

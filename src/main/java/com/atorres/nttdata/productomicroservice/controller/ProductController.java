@@ -30,7 +30,7 @@ public class ProductController {
 
 
     @PostMapping("/create/personal")
-    public Mono<ResponseEntity<ProductDao>> createPersonal(@RequestBody Mono<RequestProductPersonal> requestProductPersonal) {
+    public Mono<ResponseEntity<ProductDao>> createPersonal(@Valid @RequestBody Mono<RequestProductPersonal> requestProductPersonal) {
         return requestProductPersonal.flatMap(product -> {
             return productService.createProductPersonal(product).map(p -> {
                 log.info("Producto Creado con exito");
@@ -42,7 +42,7 @@ public class ProductController {
         });
     }
     @PostMapping("/create/bussines")
-    public Mono<ResponseEntity<ProductDao>> createBussines(@RequestBody Mono<ProductPos> productPosMono) {
+    public Mono<ResponseEntity<ProductDao>> createBussines(@Valid @RequestBody Mono<ProductPos> productPosMono) {
         return productPosMono.flatMap(product -> {
             return productService.createProductBussines(product).map(p -> {
                 log.info("Producto Creado con exito");

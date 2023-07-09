@@ -1,30 +1,27 @@
 package com.atorres.nttdata.productomicroservice.mapper;
 
 import com.atorres.nttdata.productomicroservice.model.ProductPos;
+import com.atorres.nttdata.productomicroservice.model.RequestProductPersonal;
 import com.atorres.nttdata.productomicroservice.model.dao.ProductDao;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 @Component
 public class ProductMapper {
-    public ProductDao  postToDao (ProductPos productPos){
-        ProductDao productDao = new ProductDao ();
-        productDao.setId(generateId());
-        //productDao.setType(productPos.getListClient().get(0).getTypeClient());
-        //productDao.setListClient(productPos.getListClient());
-        //productDao.setListAccount(productPos.getListAccount());
-        //productDao.setListCredit(productPos.getListCredit());
-        return productDao;
+    public ProductDao  productToproductDao(RequestProductPersonal productPos){
+        return ProductDao.builder()
+                .id(generateId())
+                .type("personal")
+                .listClientId(Collections.singletonList(productPos.getClientId()))
+                .listAccount(productPos.getAccountList())
+                .listAuthorized(Collections.singletonList(productPos.getClientId()))
+                .build();
     }
 
-    public ProductDao postToDao (ProductPos productPos, String id){
-        ProductDao productDao = new ProductDao ();
-        productDao.setId(id);
-        //productDao.setType(productPos.getListClient().get(0).getTypeClient());
-        //.setListClient(productPos.getListClient());
-        //productDao.setListAccount(productPos.getListAccount());
-        //productDao.setListCredit(productPos.getListCredit());
-        return productDao;
-    }
 
     private String generateId(){
         return java.util.UUID.randomUUID().toString().replaceAll("-","");

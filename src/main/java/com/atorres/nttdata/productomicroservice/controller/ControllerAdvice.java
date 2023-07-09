@@ -2,6 +2,7 @@ package com.atorres.nttdata.productomicroservice.controller;
 
 import com.atorres.nttdata.productomicroservice.exception.CustomException;
 import com.atorres.nttdata.productomicroservice.exception.ErrorDto;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -27,6 +28,16 @@ public class ControllerAdvice {
                 .message(ex.getMessage())
                 .build();
         return new ResponseEntity<>(error,ex.getStatus());
+    }
+
+    @ExceptionHandler(value = ConstraintViolationException.class)
+    public ResponseEntity<ErrorDto> customExceptionHandler(ConstraintViolationException ex){
+        ErrorDto error = ErrorDto
+                .builder()
+                .httpStatus(HttpStatus.BAD_REQUEST)
+                .message("La account no cumple con el tipo")
+                .build();
+        return new ResponseEntity<>(error,HttpStatus.BAD_REQUEST);
     }
 
 }
