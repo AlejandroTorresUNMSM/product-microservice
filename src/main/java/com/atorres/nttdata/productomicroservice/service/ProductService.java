@@ -15,13 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import reactivefeign.spring.config.ReactiveFeignNamedContextFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class ProductService {
@@ -32,61 +31,78 @@ public class ProductService {
     @Autowired
     private WebClientMicroservice webClientMicroservice;
 
-    public Flux<ProductDao> findAll(){
+    public Flux<ProductDao> findAll() {
         return productRepository.findAll();
     }
 
-    public Mono<ProductDao> createProductPersonal(RequestProductPersonal productPersonal){
+    public Mono<ProductDao> createProductPersonal(RequestProductPersonal productPersonal) {
         Flux<ClientDao> listClientDao = webClientMicroservice.getClients();
+        Flux<ProductDao> listProduct = productRepository.findAll();
         //revisar que existan los clientes
         Mono<Boolean> existPersonal = listClientDao.any(clientDao -> clientDao.getId().equals(productPersonal.getClientId()) && clientDao.getTypeClient().equals("personal"));
+        //verificar que el client no tenga otros productos
+        Mono<Boolean> productExist = this.verifyExistProduct(Collections.singletonList(productPersonal.getClientId()),listProduct);
+
         //verificar que se cumpla las reglas de las cuentas personales
         Mono<Boolean> verifyAccount = this.verifyAccountPersonal(Flux.fromIterable(productPersonal.getAccountList()));
 
-       return verifyAccount.flatMap(exist -> exist ?  productRepository.save(productMapper.productToproductDao(productPersonal)) :  Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"error error")) );
+        return verifyAccount.flatMap(exist -> exist ? productRepository.save(productMapper.productToproductDao(productPersonal)) : Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "error error")));
     }
 
-    public Mono<ProductDao> createProductBussines(ProductPos productPos){
+    public Mono<ProductDao> createProductBussines(ProductPos productPos) {
         Flux<ClientDao> listClientDao = webClientMicroservice.getClients();
         //revisar que existan los clientes
-        verifyClientBussines(productPos.getListClient(),listClientDao);
+        verifyClientBussines(productPos.getListClient(), listClientDao);
         //revisar si son dos o mas clientes que pertenezcan al tipo bussines
         //Mono<String> typep = this.verifyTypeProduct(Flux.fromIterable(productPos.getListClient()));
 
         //ejecutar las reglas de producto segun el tipo
 
 
-
         return Mono.just(ProductDao.builder().build());
-  }
+    }
 
-    /**Funcion para clientes personal que revisa que el cliente tenga maximo una cuenta de cada tipo
+    /**Por arreglar **/
+    private Mono<Boolean> verifyExistProduct(List<String> listClientId,Flux<ProductDao> listProduct){
+        return Flux.fromIterable(listClientId)
+                .flatMap(clientId -> listProduct
+                        .filter(product -> product.getListClientId().contains(clientId))
+                        .hasElements()
+                        .flatMap(exists -> exists
+                                ? Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"El cliente ya tiene productos"))
+                                : Mono.just(false)))
+                .any(Boolean::booleanValue);
+    }
+
+
+    /**
+     * Funcion para clientes personal que revisa que el cliente tenga maximo una cuenta de cada tipo
      *
      * @param listAccount Listas de cuenta del request
      * @return Retorna un true si cumple con los requisitos
      */
-    private Mono<Boolean> verifyAccountPersonal(Flux<AccountDao> listAccount){
-        return   listAccount
+
+    private Mono<Boolean> verifyAccountPersonal(Flux<AccountDao> listAccount) {
+        return listAccount
                 .groupBy(AccountDao::getType)
                 .flatMap(group -> group.count().map(count -> Pair.of(group.key(), count)))
                 .collectList()
-                .map(groups -> groups.size() <=3 && groups.size() >=1 && groups.stream().allMatch(pair -> pair.getSecond() == 1))
+                .map(groups -> groups.size() <= 3 && groups.size() >= 1 && groups.stream().allMatch(pair -> pair.getSecond() == 1))
                 .filter(result -> result)
-                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"No se cumplen las condiciones requeridas para los tipos de cuenta personal")));
+                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "No se cumplen las condiciones requeridas para los tipos de cuenta personal")));
+    }
+
+    private void verifyClientBussines(List<String> listId, Flux<ClientDao> listClientDao) {
 
     }
 
-    private void verifyClientBussines(List<String> listId,Flux<ClientDao>  listClientDao){
-
-    }
-
-    private Mono<String> verifyTypeProduct(Flux<ClientDao> listClient){
+    private Mono<String> verifyTypeProduct(Flux<ClientDao> listClient) {
         return listClient
                 .map(ClientDao::getTypeClient)
                 .distinct()
                 .reduce((prev, current) -> prev.equals(current) ? prev : "")
                 .filter(categoria -> !categoria.isEmpty())
-                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"Los clientes no pertenecen al mismo tipo")));
+                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "Los clientes no pertenecen al mismo tipo")));
     }
 
 
