@@ -4,6 +4,7 @@ import com.atorres.nttdata.productomicroservice.client.WebClientMicroservice;
 import com.atorres.nttdata.productomicroservice.exception.CustomException;
 import com.atorres.nttdata.productomicroservice.mapper.ProductMapper;
 import com.atorres.nttdata.productomicroservice.model.ProductPos;
+import com.atorres.nttdata.productomicroservice.model.RequestProductPersonal;
 import com.atorres.nttdata.productomicroservice.model.dao.AccountDao;
 import com.atorres.nttdata.productomicroservice.model.dao.ClientDao;
 import com.atorres.nttdata.productomicroservice.model.dao.CreditDao;
@@ -42,10 +43,19 @@ public class ProductService {
         return productRepository.findAll();
     }
 
-    public Mono<ProductDao> createPersonal(ProductPos productPos){
+    public Mono<ProductDao> createProductPersonal(RequestProductPersonal productPersonal){
         Flux<ClientDao> listClientDao = webClientMicroservice.getClients();
         //revisar que existan los clientes
-        verifyClient(productPos.getListClient(),listClientDao.collectList().block());
+        Mono<Boolean> existPersonal = listClientDao.any(clientDao -> clientDao.getId().equals(productPersonal.getClientId()) && clientDao.getTypeClient().equals("personal"));
+        //verificar que se cumpla las reglas de las cuentas
+
+       return existPersonal.flatMap(exist -> exist ?  Mono.just(new ProductDao()) :  Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"El client no existe o no es tipo personal")) );
+    }
+
+    public Mono<ProductDao> createProductBussines(ProductPos productPos){
+        Flux<ClientDao> listClientDao = webClientMicroservice.getClients();
+        //revisar que existan los clientes
+        verifyClientBussines(productPos.getListClient(),listClientDao);
         //revisar si son dos o mas clientes que pertenezcan al tipo bussines
         //Mono<String> typep = this.verifyTypeProduct(Flux.fromIterable(productPos.getListClient()));
 
@@ -54,23 +64,7 @@ public class ProductService {
 
 
         return Mono.just(new ProductDao());
-       // return existProduct.flatMap(exist -> exist ? Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"El producto ya existe")) : productRepository.save(productMapper.postToDao(productPos)));
-    }
-
-    public Mono<ProductDao> createBussines(ProductPos productPos){
-        Flux<ClientDao> listClientDao = webClientMicroservice.getClients();
-        //revisar que existan los clientes
-        verifyClient(productPos.getListClient(),listClientDao.collectList().block());
-        //revisar si son dos o mas clientes que pertenezcan al tipo bussines
-        //Mono<String> typep = this.verifyTypeProduct(Flux.fromIterable(productPos.getListClient()));
-
-        //ejecutar las reglas de producto segun el tipo
-
-
-
-        return Mono.just(new ProductDao());
-        // return existProduct.flatMap(exist -> exist ? Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"El producto ya existe")) : productRepository.save(productMapper.postToDao(productPos)));
-    }
+  }
 
 
     private List<AccountDao> createAccount(ProductPos productPos){
@@ -81,9 +75,10 @@ public class ProductService {
         return new ArrayList<>();
     }
 
-    private void verifyClient(List<String> listId,List<ClientDao>  listClientDao){
+    /**
+    private void verifyClient(List<String> listId,Flux<ClientDao>  listClientDao){
         Flux.fromIterable(listId)
-                .filter(id -> listClientDao.stream().noneMatch(cliente -> Objects.equals(cliente.getId(), id)))
+                .filter(id -> listClientDao.any(cliente -> Objects.equals(cliente.getId(), id)))
                 .collectList()
                 .doOnNext(idsFaltantes -> {
                     if (!idsFaltantes.isEmpty()) {
@@ -91,6 +86,13 @@ public class ProductService {
                     }
                 })
                 .block();
+    }**/
+    private Flux<AccountDao> verifyAccountPersonal(Flux<AccountDao> listAccount){
+        return listAccount;
+    }
+
+    private void verifyClientBussines(List<String> listId,Flux<ClientDao>  listClientDao){
+
     }
 
     private Mono<String> verifyTypeProduct(Flux<ClientDao> listClient){

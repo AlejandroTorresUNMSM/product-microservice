@@ -1,6 +1,7 @@
 package com.atorres.nttdata.productomicroservice.controller;
 
 import com.atorres.nttdata.productomicroservice.model.ProductPos;
+import com.atorres.nttdata.productomicroservice.model.RequestProductPersonal;
 import com.atorres.nttdata.productomicroservice.model.dao.ClientDao;
 import com.atorres.nttdata.productomicroservice.model.dao.ProductDao;
 import com.atorres.nttdata.productomicroservice.service.ProductService;
@@ -29,9 +30,9 @@ public class ProductController {
 
 
     @PostMapping("/create/personal")
-    public Mono<ResponseEntity<ProductDao>> createPersonal(@RequestBody Mono<ProductPos> productPosMono) {
-        return productPosMono.flatMap(product -> {
-            return productService.createPersonal(product).map(p -> {
+    public Mono<ResponseEntity<ProductDao>> createPersonal(@RequestBody Mono<RequestProductPersonal> requestProductPersonal) {
+        return requestProductPersonal.flatMap(product -> {
+            return productService.createProductPersonal(product).map(p -> {
                 log.info("Producto Creado con exito");
                 return ResponseEntity
                         .created(URI.create("/api/product/create/personal"))
@@ -43,7 +44,7 @@ public class ProductController {
     @PostMapping("/create/bussines")
     public Mono<ResponseEntity<ProductDao>> createBussines(@RequestBody Mono<ProductPos> productPosMono) {
         return productPosMono.flatMap(product -> {
-            return productService.createBussines(product).map(p -> {
+            return productService.createProductBussines(product).map(p -> {
                 log.info("Producto Creado con exito");
                 return ResponseEntity
                         .created(URI.create("/api/product/create/bussines"))
