@@ -9,22 +9,20 @@ public class ProductMapper {
     public ProductDao  postToDao (ProductPos productPos){
         ProductDao productDao = new ProductDao ();
         productDao.setId(generateId());
-        productDao.setName(productPos.getName());
-        productDao.setType(productPos.getListClient().get(0).getTypeClient());
-        productDao.setListClient(productPos.getListClient());
-        productDao.setListAccount(productPos.getListAccount());
-        productDao.setListCredit(productPos.getListCredit());
+        //productDao.setType(productPos.getListClient().get(0).getTypeClient());
+        //productDao.setListClient(productPos.getListClient());
+        //productDao.setListAccount(productPos.getListAccount());
+        //productDao.setListCredit(productPos.getListCredit());
         return productDao;
     }
 
     public ProductDao postToDao (ProductPos productPos, String id){
         ProductDao productDao = new ProductDao ();
         productDao.setId(id);
-        productDao.setName(productPos.getName());
-        productDao.setType(productPos.getListClient().get(0).getTypeClient());
-        productDao.setListClient(productPos.getListClient());
-        productDao.setListAccount(productPos.getListAccount());
-        productDao.setListCredit(productPos.getListCredit());
+        //productDao.setType(productPos.getListClient().get(0).getTypeClient());
+        //.setListClient(productPos.getListClient());
+        //productDao.setListAccount(productPos.getListAccount());
+        //productDao.setListCredit(productPos.getListCredit());
         return productDao;
     }
 

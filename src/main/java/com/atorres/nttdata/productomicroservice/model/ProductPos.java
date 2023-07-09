@@ -9,8 +9,5 @@ import java.util.List;
 
 @Data
 public class ProductPos {
-    private String name;
-    private List<ClientDao> listClient;
-    private List<CreditDao> listCredit;
-    private List<AccountDao> listAccount;
+    private List<String> listClient;
 }

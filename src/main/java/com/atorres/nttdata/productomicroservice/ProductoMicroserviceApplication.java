@@ -5,7 +5,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import reactivefeign.spring.config.EnableReactiveFeignClients;
 
 @SpringBootApplication
-@EnableReactiveFeignClients
 public class ProductoMicroserviceApplication {
 
 	public static void main(String[] args) {

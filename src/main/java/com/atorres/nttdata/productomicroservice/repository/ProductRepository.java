@@ -7,5 +7,4 @@ import reactor.core.publisher.Mono;
 
 @Repository
 public interface ProductRepository extends ReactiveMongoRepository<ProductDao,String> {
-    Mono<ProductDao> findByName(String name);
 }

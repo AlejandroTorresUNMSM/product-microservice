@@ -11,7 +11,6 @@ import java.util.List;
 public class ProductDao {
     @Id
     private String Id;
-    private String name;
     private String type;
     private List<ClientDao> listClient;
     private List<CreditDao> listCredit;
