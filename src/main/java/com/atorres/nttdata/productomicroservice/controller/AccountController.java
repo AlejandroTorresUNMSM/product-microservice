@@ -2,6 +2,7 @@ package com.atorres.nttdata.productomicroservice.controller;
 
 import com.atorres.nttdata.productomicroservice.model.RequestAccount;
 import com.atorres.nttdata.productomicroservice.model.RequestClientproduct;
+import com.atorres.nttdata.productomicroservice.model.RequestUpdateAccount;
 import com.atorres.nttdata.productomicroservice.model.dao.AccountDao;
 import com.atorres.nttdata.productomicroservice.model.dao.ClientProductDao;
 import com.atorres.nttdata.productomicroservice.service.AccountService;
@@ -54,6 +55,19 @@ public class AccountController {
     @DeleteMapping("")
     public Flux<Void> deleteAccount(@RequestBody RequestClientproduct requestClientproduct){
         return accountService.delete(requestClientproduct);
+    }
+
+    @PutMapping("/update")
+    public Mono<ResponseEntity<AccountDao>> updateAccount(@RequestBody Mono<RequestUpdateAccount> request){
+        return request.flatMap(account -> {
+            return accountService.update(account).map(p -> {
+                log.info("Cuenta actualizada con exito");
+                return ResponseEntity
+                        .created(URI.create(""))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(p);
+            });
+        });
     }
 
 

@@ -4,6 +4,7 @@ import com.atorres.nttdata.productomicroservice.client.WebClientMicroservice;
 import com.atorres.nttdata.productomicroservice.exception.CustomException;
 import com.atorres.nttdata.productomicroservice.model.RequestAccount;
 import com.atorres.nttdata.productomicroservice.model.RequestClientproduct;
+import com.atorres.nttdata.productomicroservice.model.RequestUpdateAccount;
 import com.atorres.nttdata.productomicroservice.model.dao.AccountDao;
 import com.atorres.nttdata.productomicroservice.model.dao.ClientProductDao;
 import com.atorres.nttdata.productomicroservice.repository.AccountRepository;
@@ -82,6 +83,23 @@ public class AccountService {
                         .flatMap(account -> clientProductRepository.deleteById(cp.getId())
                                 .then(accountRepository.deleteById(cp.getProduct())))
                         .switchIfEmpty(Mono.defer(() ->Mono.error(new CustomException(HttpStatus.NOT_FOUND, "Existe la relacion pero no se encontró el producto"))))
+                );
+    }
+
+    public Mono<AccountDao> update(RequestUpdateAccount request){
+        return clientProductRepository.findAll()
+                .filter(cp -> cp.getCategory().equals("account"))
+                .filter(cp -> cp.getClient().equals(request.getClientId()))
+                .filter(cp -> cp.getProduct().equals(request.getAccountId()))
+                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NOT_FOUND, "No la relacion client-producto")))
+                .single()
+                .flatMap(cp -> accountRepository.findById(cp.getProduct())
+                        .flatMap(account ->{
+                            //Actualizando balance
+                            account.setBalance(request.getBalance());
+                            return accountRepository.save(account);
+                        })
+                        .switchIfEmpty(Mono.defer(() ->Mono.error(new CustomException(HttpStatus.NOT_FOUND, "Existe la cuenta"))))
                 );
     }
 
