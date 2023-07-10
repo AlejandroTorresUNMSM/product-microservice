@@ -1,5 +1,6 @@
 package com.atorres.nttdata.productomicroservice.model.dao;
 
+import com.atorres.nttdata.productomicroservice.utils.ClientType;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 
@@ -10,5 +11,5 @@ public class ClientDao {
     private String typeDocument;
     private String nroDocument;
     private String name;
-    private String typeClient;
+    private ClientType typeClient;
 }

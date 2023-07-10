@@ -8,7 +8,10 @@ import com.atorres.nttdata.productomicroservice.model.dao.ClientDao;
 import com.atorres.nttdata.productomicroservice.model.dao.ClientProductDao;
 import com.atorres.nttdata.productomicroservice.repository.AccountRepository;
 import com.atorres.nttdata.productomicroservice.repository.ClientProductRepository;
+import com.atorres.nttdata.productomicroservice.service.strategy.AccountStrategy;
+import com.atorres.nttdata.productomicroservice.service.strategy.StrategyFactory;
 import com.atorres.nttdata.productomicroservice.utils.RequestMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
@@ -19,6 +22,7 @@ import reactor.core.publisher.Mono;
 import java.util.Objects;
 
 @Service
+@Slf4j
 public class AccountService {
     @Autowired
     private AccountRepository accountRepository;
@@ -28,30 +32,23 @@ public class AccountService {
     private ClientProductRepository clientProductRepository;
     @Autowired
     private RequestMapper requestMapper;
+    @Autowired
+    private StrategyFactory strategyFactory;
 
     public Mono<ClientProductDao> createAccount(String clientId, RequestAccount requestAccount){
         //obtenemos el cliente
         Mono<ClientDao> client = webClientMicroservice.getClientById(clientId);
-
-        //revisamos que la cuenta cumpla el tipo del cliente
-        /**client.flatMap(clientdao -> {
-            System.out.println("");
-            return switch (clientdao.getTypeClient()) {
-                case "personal" -> this.verifyAccountPersonal(accountAll);
-                case "bussines" -> this.verifyAccountPersonal(accountAll);
-                default -> Mono.error(new CustomException(HttpStatus.NOT_FOUND, "No exista el tipo del cliente"));
-            };
-        }).subscribe();  **/
         return client
                 .flatMap(clientdao -> {
                     //obtenemos todas las cuentas agregando la nueva
-                    Flux<AccountDao> accountAll = getAllAccountsByClient(clientId).concatWith(Flux.just(requestMapper.accountToDao(requestAccount)));
-                    verifyAccountPersonal(accountAll);
-                    //guardamos el producto
-                    return accountRepository.save(requestMapper.accountToDao(requestAccount)).flatMap(accountDao -> {
-                        //con el productoid creamos el clientproduct
+                    Flux<AccountDao> accountAll = this.getAllAccountsByClient(clientId).concatWith(Flux.just(requestMapper.accountToDao(requestAccount)));
+                    //seleccionamos la estrategia para el tipo de cliente
+                    AccountStrategy strategy = strategyFactory.getStrategy(clientdao.getTypeClient());
+                    return strategy.verifyAccount(accountAll).flatMap( exist -> !exist ? Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"La cuenta no cumplen los requisitos"))
+                            : accountRepository.save(requestMapper.accountToDao(requestAccount)).flatMap(accountDao -> {
+                        //guardamos la relacion client-product
                         return clientProductRepository.save(requestMapper.cpToDao(clientdao, accountDao));
-                    });
+                    }));
                 });
     }
 
@@ -67,13 +64,4 @@ public class AccountService {
                 .flatMap(cp -> accountRepository.findAll().filter(accountDao -> accountDao.getId().equalsIgnoreCase(cp.getProduct())));
     }
 
-    private Mono<Boolean> verifyAccountPersonal(Flux<AccountDao> listAccount) {
-        return listAccount
-                .groupBy(AccountDao::getType)
-                .flatMap(group -> group.count().map(count -> Pair.of(group.key(), count)))
-                .collectList()
-                .map(groups -> groups.size() <= 3 && groups.size() >= 1 && groups.stream().allMatch(pair -> pair.getSecond() == 1))
-                .filter(result -> result)
-                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "No se cumplen las condiciones requeridas para los tipos de cuenta personal")));
-    }
 }

@@ -79,14 +79,6 @@ public class ProductService {
 
     }
 
-    private Mono<String> verifyTypeProduct(Flux<ClientDao> listClient) {
-        return listClient
-                .map(ClientDao::getTypeClient)
-                .distinct()
-                .reduce((prev, current) -> prev.equals(current) ? prev : "")
-                .filter(categoria -> !categoria.isEmpty())
-                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "Los clientes no pertenecen al mismo tipo")));
-    }
 
 
 }
