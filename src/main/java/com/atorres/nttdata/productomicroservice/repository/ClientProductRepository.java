@@ -10,4 +10,5 @@ import reactor.core.publisher.Mono;
 public interface ClientProductRepository extends ReactiveMongoRepository<ClientProductDao,String> {
 
     Flux<ClientProductDao> findByClient(String client);
+    Flux<ClientProductDao> findByProduct(String product);
 }

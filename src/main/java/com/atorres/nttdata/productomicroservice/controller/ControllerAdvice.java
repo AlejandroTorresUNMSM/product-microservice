@@ -20,6 +20,7 @@ public class ControllerAdvice {
         return new ResponseEntity<>(error,HttpStatus.BAD_REQUEST);
     }
 
+
     @ExceptionHandler(value = CustomException.class)
     public ResponseEntity<ErrorDto> customExceptionHandler(CustomException ex){
         ErrorDto error = ErrorDto

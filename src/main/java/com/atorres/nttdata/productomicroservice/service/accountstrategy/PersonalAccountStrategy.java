@@ -1,4 +1,4 @@
-package com.atorres.nttdata.productomicroservice.service.strategy;
+package com.atorres.nttdata.productomicroservice.service.accountstrategy;
 
 import com.atorres.nttdata.productomicroservice.exception.CustomException;
 import com.atorres.nttdata.productomicroservice.model.dao.AccountDao;

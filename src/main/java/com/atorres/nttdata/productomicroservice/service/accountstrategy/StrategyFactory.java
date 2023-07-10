@@ -1,8 +1,6 @@
-package com.atorres.nttdata.productomicroservice.service.strategy;
+package com.atorres.nttdata.productomicroservice.service.accountstrategy;
 
-import com.atorres.nttdata.productomicroservice.utils.AccountType;
 import com.atorres.nttdata.productomicroservice.utils.ClientType;
-import com.atorres.nttdata.productomicroservice.utils.ProductType;
 import org.springframework.stereotype.Component;
 
 import java.util.EnumMap;
