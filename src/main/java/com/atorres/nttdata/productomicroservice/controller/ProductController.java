@@ -46,6 +46,12 @@ public class ProductController {
         });
     }
 
+    /**
+     * Metodo para crear una cuenta para un cliente por su id
+     * @param clientId id del cliente
+     * @param requestAccount request con los datos de la cuenta
+     * @return retorna la entidad relacion client-product
+     */
     @PostMapping("/account/{clientId}")
     public Mono<ResponseEntity<ClientProductDao>> createAccount(@PathVariable String clientId, @RequestBody Mono<RequestAccount> requestAccount){
         return requestAccount.flatMap(account -> {
@@ -57,6 +63,16 @@ public class ProductController {
                         .body(p);
             });
         });
+    }
+
+    /**
+     * Funcion para obtener todas las cuentas de un cliente
+     * @param id id del cliente
+     * @return devuelve una lista de cuentas
+     */
+    @GetMapping("/account/client/{id}")
+    public Flux<AccountDao> getAllAccountClient(@PathVariable String id){
+        return accountService.getAllAccountsByClient(id);
     }
 
 }

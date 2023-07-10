@@ -33,9 +33,6 @@ public class AccountService {
         //obtenemos el cliente
         Mono<ClientDao> client = webClientMicroservice.getClientById(clientId);
 
-        //obtenemos las cuentas del cliente y añado la nueva cuenta
-        //Flux<AccountDao> accountAll = getAllAccountsByClient(clientId).concatWith(Flux.just(requestMapper.accountToDao(requestAccount)));
-
         //revisamos que la cuenta cumpla el tipo del cliente
         /**client.flatMap(clientdao -> {
             System.out.println("");
@@ -45,16 +42,11 @@ public class AccountService {
                 default -> Mono.error(new CustomException(HttpStatus.NOT_FOUND, "No exista el tipo del cliente"));
             };
         }).subscribe();  **/
-        //Guardamos el producto
-        //Mono<AccountDao> accountDaoMono = accountRepository.save(requestMapper.accountToDao(requestAccount));
-        //Guardamos la relacion clientProduct
-         //return clientProductRepository.save(requestMapper.cpToDao(Objects.requireNonNull(client.block()), Objects.requireNonNull(accountDaoMono.block())));
-
         return client
                 .flatMap(clientdao -> {
                     //obtenemos todas las cuentas agregando la nueva
                     Flux<AccountDao> accountAll = getAllAccountsByClient(clientId).concatWith(Flux.just(requestMapper.accountToDao(requestAccount)));
-
+                    verifyAccountPersonal(accountAll);
                     //guardamos el producto
                     return accountRepository.save(requestMapper.accountToDao(requestAccount)).flatMap(accountDao -> {
                         //con el productoid creamos el clientproduct
@@ -63,10 +55,16 @@ public class AccountService {
                 });
     }
 
+
+    /**
+     * Metodo para obtener todas las cuentas de un cliente
+     * @param clientId id de cliente
+     * @return devuelve una lista de cuentas
+     */
     public Flux<AccountDao> getAllAccountsByClient(String clientId){
-        return clientProductRepository.findByClientid(clientId)
+        return clientProductRepository.findByClient(clientId)
                 .filter(cp -> cp.getCategory().equals("account"))
-                .flatMap(cp -> accountRepository.findById(cp.getProductid()));
+                .flatMap(cp -> accountRepository.findAll().filter(accountDao -> accountDao.getId().equalsIgnoreCase(cp.getProduct())));
     }
 
     private Mono<Boolean> verifyAccountPersonal(Flux<AccountDao> listAccount) {

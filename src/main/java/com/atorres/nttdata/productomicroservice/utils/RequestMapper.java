@@ -22,8 +22,8 @@ public class RequestMapper {
         return ClientProductDao.builder()
                 .id(generateId())
                 .category("account")
-                .clientid(client.getId())
-                .productid(product.getId())
+                .client(client.getId())
+                .product(product.getId())
                 .build();
     }
 

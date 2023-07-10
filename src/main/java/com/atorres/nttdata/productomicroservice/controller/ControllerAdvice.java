@@ -30,12 +30,12 @@ public class ControllerAdvice {
         return new ResponseEntity<>(error,ex.getStatus());
     }
 
-    @ExceptionHandler(value = ConstraintViolationException.class)
-    public ResponseEntity<ErrorDto> customExceptionHandler(ConstraintViolationException ex){
+    @ExceptionHandler(value = IllegalArgumentException.class)
+    public ResponseEntity<ErrorDto> customExceptionHandler(IllegalArgumentException ex){
         ErrorDto error = ErrorDto
                 .builder()
                 .httpStatus(HttpStatus.BAD_REQUEST)
-                .message("La account no cumple con el tipo")
+                .message(ex.getMessage())
                 .build();
         return new ResponseEntity<>(error,HttpStatus.BAD_REQUEST);
     }
