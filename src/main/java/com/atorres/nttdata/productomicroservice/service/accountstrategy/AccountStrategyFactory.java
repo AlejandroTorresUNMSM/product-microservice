@@ -7,10 +7,10 @@ import java.util.EnumMap;
 import java.util.Map;
 
 @Component
-public class StrategyFactory {
+public class AccountStrategyFactory {
     private final Map<ClientType, AccountStrategy> strategies = new EnumMap<>(ClientType.class);
 
-    public StrategyFactory() {
+    public AccountStrategyFactory() {
         initStrategies();
     }
 

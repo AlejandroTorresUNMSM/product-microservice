@@ -1,10 +1,8 @@
 package com.atorres.nttdata.productomicroservice.utils;
 
 import com.atorres.nttdata.productomicroservice.model.RequestAccount;
-import com.atorres.nttdata.productomicroservice.model.dao.AccountDao;
-import com.atorres.nttdata.productomicroservice.model.dao.ClientDao;
-import com.atorres.nttdata.productomicroservice.model.dao.ClientProductDao;
-import com.atorres.nttdata.productomicroservice.model.dao.ProductDao;
+import com.atorres.nttdata.productomicroservice.model.RequestCredit;
+import com.atorres.nttdata.productomicroservice.model.dao.*;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -18,12 +16,29 @@ public class RequestMapper {
                 .build();
     }
 
-    public ClientProductDao cpToDao(ClientDao client, AccountDao product){
+    public ClientProductDao cpToDaoAccount(ClientDao client, AccountDao product){
         return ClientProductDao.builder()
                 .id(generateId())
                 .category("account")
                 .client(client.getId())
                 .product(product.getId())
+                .build();
+    }
+
+    public ClientProductDao cpToDaoCredit(ClientDao client, CreditDao creditDao){
+        return ClientProductDao.builder()
+                .id(generateId())
+                .category("credit")
+                .client(client.getId())
+                .product(creditDao.getId())
+                .build();
+    }
+
+    public CreditDao requestToDao(RequestCredit requestCredit){
+        return CreditDao.builder()
+                .id(generateId())
+                .balance(requestCredit.getBalance())
+                .debt(requestCredit.getBalance())
                 .build();
     }
 
