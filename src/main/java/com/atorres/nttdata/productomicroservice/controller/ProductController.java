@@ -1,9 +1,11 @@
 package com.atorres.nttdata.productomicroservice.controller;
 
-import com.atorres.nttdata.productomicroservice.model.ProductPos;
+import com.atorres.nttdata.productomicroservice.model.RequestAccount;
 import com.atorres.nttdata.productomicroservice.model.RequestProductPersonal;
-import com.atorres.nttdata.productomicroservice.model.dao.ClientDao;
+import com.atorres.nttdata.productomicroservice.model.dao.AccountDao;
+import com.atorres.nttdata.productomicroservice.model.dao.ClientProductDao;
 import com.atorres.nttdata.productomicroservice.model.dao.ProductDao;
+import com.atorres.nttdata.productomicroservice.service.AccountService;
 import com.atorres.nttdata.productomicroservice.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,8 @@ import java.net.URI;
 public class ProductController {
     @Autowired
     ProductService productService;
+    @Autowired
+    AccountService accountService;
 
     @GetMapping
     public Flux<ProductDao> getProducts(){
@@ -41,16 +45,18 @@ public class ProductController {
             });
         });
     }
-    @PostMapping("/create/bussines")
-    public Mono<ResponseEntity<ProductDao>> createBussines(@Valid @RequestBody Mono<ProductPos> productPosMono) {
-        return productPosMono.flatMap(product -> {
-            return productService.createProductBussines(product).map(p -> {
-                log.info("Producto Creado con exito");
+
+    @PostMapping("/account/{clientId}")
+    public Mono<ResponseEntity<ClientProductDao>> createAccount(@PathVariable String clientId, @RequestBody Mono<RequestAccount> requestAccount){
+        return requestAccount.flatMap(account -> {
+            return accountService.createAccount(clientId,account).map(p -> {
+                log.info("Cuenta Creada con exito");
                 return ResponseEntity
-                        .created(URI.create("/api/product/create/bussines"))
+                        .created(URI.create("/account/".concat(clientId)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(p);
             });
         });
     }
+
 }

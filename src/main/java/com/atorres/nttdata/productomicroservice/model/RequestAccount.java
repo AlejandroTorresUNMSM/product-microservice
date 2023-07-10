@@ -4,7 +4,7 @@ import com.atorres.nttdata.productomicroservice.utils.AccountType;
 import lombok.Data;
 
 @Data
-public class Account {
+public class RequestAccount {
     private AccountType type;
     private Double balance;
 }

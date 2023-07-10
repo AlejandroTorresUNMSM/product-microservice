@@ -7,8 +7,6 @@ import org.springframework.data.annotation.Id;
 public class CreditDao {
     @Id
     private String id;
-    private String clientId;
-    private String type;
     private Double balance;
     private Double debt;
 }

@@ -3,14 +3,11 @@ package com.atorres.nttdata.productomicroservice.service;
 import com.atorres.nttdata.productomicroservice.client.WebClientMicroservice;
 import com.atorres.nttdata.productomicroservice.exception.CustomException;
 import com.atorres.nttdata.productomicroservice.mapper.ProductMapper;
-import com.atorres.nttdata.productomicroservice.model.ProductPos;
 import com.atorres.nttdata.productomicroservice.model.RequestProductPersonal;
 import com.atorres.nttdata.productomicroservice.model.dao.AccountDao;
 import com.atorres.nttdata.productomicroservice.model.dao.ClientDao;
-import com.atorres.nttdata.productomicroservice.model.dao.CreditDao;
 import com.atorres.nttdata.productomicroservice.model.dao.ProductDao;
 import com.atorres.nttdata.productomicroservice.repository.ProductRepository;
-import com.atorres.nttdata.productomicroservice.utils.ProductType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
@@ -19,7 +16,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -47,19 +43,6 @@ public class ProductService {
         Mono<Boolean> verifyAccount = this.verifyAccountPersonal(Flux.fromIterable(productPersonal.getAccountList()));
 
         return verifyAccount.flatMap(exist -> exist ? productRepository.save(productMapper.productToproductDao(productPersonal)) : Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "error error")));
-    }
-
-    public Mono<ProductDao> createProductBussines(ProductPos productPos) {
-        Flux<ClientDao> listClientDao = webClientMicroservice.getClients();
-        //revisar que existan los clientes
-        verifyClientBussines(productPos.getListClient(), listClientDao);
-        //revisar si son dos o mas clientes que pertenezcan al tipo bussines
-        //Mono<String> typep = this.verifyTypeProduct(Flux.fromIterable(productPos.getListClient()));
-
-        //ejecutar las reglas de producto segun el tipo
-
-
-        return Mono.just(ProductDao.builder().build());
     }
 
     /**Por arreglar **/

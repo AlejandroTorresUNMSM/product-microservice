@@ -1,17 +1,17 @@
 package com.atorres.nttdata.productomicroservice.model.dao;
 
-import com.atorres.nttdata.productomicroservice.utils.AccountType;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
-@Document("account")
+@Document("cliente-product")
 @Builder
-public class AccountDao {
+public class ClientProductDao {
     @Id
     private String id;
-    private AccountType type;
-    private Double balance;
+    private String clientid;
+    private String productid;
+    private String category;
 }
