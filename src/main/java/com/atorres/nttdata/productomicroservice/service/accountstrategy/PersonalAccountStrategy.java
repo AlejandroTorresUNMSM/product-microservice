@@ -14,7 +14,6 @@ public class PersonalAccountStrategy implements AccountStrategy{
                 .flatMap(group -> group.count().map(count -> Pair.of(group.key(), count)))
                 .collectList()
                 .map(groups -> groups.size() <= 3 && groups.size() >= 1 && groups.stream().allMatch(pair -> pair.getSecond() == 1))
-                .filter(result -> result)
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "No se cumplen las condiciones requeridas para los tipos de cuenta personal")));
     }
 }
