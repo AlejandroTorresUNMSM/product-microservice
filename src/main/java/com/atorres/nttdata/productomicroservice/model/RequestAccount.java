@@ -7,4 +7,5 @@ import lombok.Data;
 public class RequestAccount {
     private AccountType type;
     private Double balance;
+    private boolean vip;
 }

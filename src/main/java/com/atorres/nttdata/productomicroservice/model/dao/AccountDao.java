@@ -16,4 +16,5 @@ public class AccountDao {
     private String id;
     private AccountType type;
     private Double balance;
+    private boolean vip;
 }

@@ -7,8 +7,10 @@ import com.atorres.nttdata.productomicroservice.model.RequestClientproduct;
 import com.atorres.nttdata.productomicroservice.model.RequestUpdateAccount;
 import com.atorres.nttdata.productomicroservice.model.dao.AccountDao;
 import com.atorres.nttdata.productomicroservice.model.dao.ClientProductDao;
+import com.atorres.nttdata.productomicroservice.model.dao.CreditDao;
 import com.atorres.nttdata.productomicroservice.repository.AccountRepository;
 import com.atorres.nttdata.productomicroservice.repository.ClientProductRepository;
+import com.atorres.nttdata.productomicroservice.repository.CreditRepository;
 import com.atorres.nttdata.productomicroservice.service.accountstrategy.AccountStrategy;
 import com.atorres.nttdata.productomicroservice.service.accountstrategy.AccountStrategyFactory;
 import com.atorres.nttdata.productomicroservice.utils.RequestMapper;
@@ -32,6 +34,8 @@ public class AccountService {
     private RequestMapper requestMapper;
     @Autowired
     private AccountStrategyFactory accountStrategyFactory;
+    @Autowired
+    private CreditService creditService;
 
     /**
      * Funcion que crear una cuenta segun el id del cliente y el requestaccount
