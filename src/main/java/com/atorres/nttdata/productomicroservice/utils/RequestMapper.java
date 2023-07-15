@@ -13,6 +13,7 @@ public class RequestMapper {
                 .id(generateId())
                 .type(requestAccount.getType())
                 .balance(requestAccount.getBalance())
+                .accountCategory(requestAccount.getAccountCategory())
                 .build();
     }
 
@@ -20,6 +21,7 @@ public class RequestMapper {
         return ClientProductDao.builder()
                 .id(generateId())
                 .category("account")
+                .subcategory(product.getAccountCategory().toString())
                 .client(client.getId())
                 .product(product.getId())
                 .build();
@@ -29,6 +31,7 @@ public class RequestMapper {
         return ClientProductDao.builder()
                 .id(generateId())
                 .category("credit")
+                .subcategory("normal")
                 .client(client.getId())
                 .product(creditDao.getId())
                 .build();

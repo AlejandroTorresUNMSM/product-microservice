@@ -1,5 +1,7 @@
 package com.atorres.nttdata.productomicroservice.service.accountstrategy;
 
+import com.atorres.nttdata.productomicroservice.repository.ClientProductRepository;
+import com.atorres.nttdata.productomicroservice.repository.CreditRepository;
 import com.atorres.nttdata.productomicroservice.utils.ClientType;
 import org.springframework.stereotype.Component;
 
@@ -9,6 +11,8 @@ import java.util.Map;
 @Component
 public class AccountStrategyFactory {
     private final Map<ClientType, AccountStrategy> strategies = new EnumMap<>(ClientType.class);
+    private CreditRepository creditRepository;
+    private ClientProductRepository clientProductRepository;
 
     public AccountStrategyFactory() {
         initStrategies();

@@ -1,5 +1,6 @@
 package com.atorres.nttdata.productomicroservice.model.dao;
 
+import com.atorres.nttdata.productomicroservice.utils.AccountCategory;
 import com.atorres.nttdata.productomicroservice.utils.AccountType;
 import lombok.Builder;
 import lombok.Data;
@@ -16,5 +17,5 @@ public class AccountDao {
     private String id;
     private AccountType type;
     private Double balance;
-    private boolean vip;
+    private AccountCategory accountCategory;
 }

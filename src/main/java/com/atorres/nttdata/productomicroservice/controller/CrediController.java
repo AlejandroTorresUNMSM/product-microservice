@@ -25,12 +25,12 @@ public class CrediController {
     CreditService creditService;
 
     @GetMapping("/client/{id}")
-    public Flux<CreditDao> getAllAccountClient(@PathVariable String id){
+    public Flux<CreditDao> getAllCreditClient(@PathVariable String id){
         return creditService.getAllCreditByClient(id);
     }
 
     @PostMapping("/client/{id}")
-    public Mono<ResponseEntity<ClientProductDao>> createAccount(@PathVariable String id, @RequestBody Mono<RequestCredit> requestCredit){
+    public Mono<ResponseEntity<ClientProductDao>> createCredit(@PathVariable String id, @RequestBody Mono<RequestCredit> requestCredit){
         return requestCredit.flatMap(credit -> {
             return creditService.createCredit(id,credit).map(p -> {
                 log.info("Credito Creada con exito");
@@ -43,7 +43,7 @@ public class CrediController {
     }
 
     @DeleteMapping("")
-    public Flux<Void> deleteAccount(@RequestBody RequestClientproduct request){
+    public Flux<Void> deleteCredit(@RequestBody RequestClientproduct request){
         return creditService.delete(request);
     }
 }

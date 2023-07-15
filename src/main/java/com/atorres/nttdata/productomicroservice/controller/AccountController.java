@@ -1,9 +1,11 @@
 package com.atorres.nttdata.productomicroservice.controller;
 
+import com.atorres.nttdata.productomicroservice.client.WebClientMicroservice;
 import com.atorres.nttdata.productomicroservice.model.RequestAccount;
 import com.atorres.nttdata.productomicroservice.model.RequestClientproduct;
 import com.atorres.nttdata.productomicroservice.model.RequestUpdateAccount;
 import com.atorres.nttdata.productomicroservice.model.dao.AccountDao;
+import com.atorres.nttdata.productomicroservice.model.dao.ClientDao;
 import com.atorres.nttdata.productomicroservice.model.dao.ClientProductDao;
 import com.atorres.nttdata.productomicroservice.service.AccountService;
 import lombok.extern.slf4j.Slf4j;
@@ -52,11 +54,21 @@ public class AccountController {
         });
     }
 
-    @DeleteMapping("")
+    /**
+     * Metodo para eliminar una cuenta
+     * @param requestClientproduct request
+     * @return void
+     */
+    @DeleteMapping("/")
     public Flux<Void> deleteAccount(@RequestBody RequestClientproduct requestClientproduct){
         return accountService.delete(requestClientproduct);
     }
 
+    /**
+     * Metodo para actualizar el balance de la cuenta
+     * @param request request
+     * @return AccountDao
+     */
     @PutMapping("/update")
     public Mono<ResponseEntity<AccountDao>> updateAccount(@RequestBody Mono<RequestUpdateAccount> request){
         return request.flatMap(account -> {

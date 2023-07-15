@@ -1,8 +1,5 @@
 package com.atorres.nttdata.productomicroservice.service.creditstrategy;
 
-import com.atorres.nttdata.productomicroservice.service.accountstrategy.AccountStrategy;
-import com.atorres.nttdata.productomicroservice.service.accountstrategy.BussinesAccountStrategy;
-import com.atorres.nttdata.productomicroservice.service.accountstrategy.PersonalAccountStrategy;
 import com.atorres.nttdata.productomicroservice.utils.ClientType;
 import org.springframework.stereotype.Component;
 
