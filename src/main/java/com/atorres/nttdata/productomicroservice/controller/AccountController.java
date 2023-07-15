@@ -30,9 +30,10 @@ public class AccountController {
      * @param id id del cliente
      * @return devuelve una lista de cuentas
      */
-    @GetMapping("/client/{id}")
+    @GetMapping(value = "/client/{id}",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<AccountDao> getAllAccountClient(@PathVariable String id){
-        return accountService.getAllAccountsByClient(id);
+        return accountService.getAllAccountsByClient(id)
+                .doOnNext(account -> log.info("Cuenta encontrada: "+account.getId()));
     }
 
     /**
@@ -41,16 +42,11 @@ public class AccountController {
      * @param requestAccount request con los datos de la cuenta
      * @return retorna la entidad relacion client-product
      */
-    @PostMapping("/client/{id}")
-    public Mono<ResponseEntity<ClientProductDao>> createAccount(@PathVariable String id, @RequestBody Mono<RequestAccount> requestAccount){
+    @PostMapping(value = "/client/{id}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Mono<ClientProductDao> createAccount(@PathVariable String id, @RequestBody Mono<RequestAccount> requestAccount){
         return requestAccount.flatMap(account -> {
-            return accountService.createAccount(id,account).map(p -> {
-                log.info("Cuenta Creada con exito");
-                return ResponseEntity
-                        .created(URI.create("/account/".concat(id)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(p);
-            });
+            return accountService.createAccount(id,account)
+                    .doOnSuccess(v -> log.info("Cuenta creada con exito"));
         });
     }
 
@@ -59,9 +55,10 @@ public class AccountController {
      * @param requestClientproduct request
      * @return void
      */
-    @DeleteMapping("/")
+    @DeleteMapping(value ="/",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Void> deleteAccount(@RequestBody RequestClientproduct requestClientproduct){
-        return accountService.delete(requestClientproduct);
+        return accountService.delete(requestClientproduct)
+                .doOnNext(v -> log.info("Cuenta eliminada con exito"));
     }
 
     /**
@@ -69,16 +66,11 @@ public class AccountController {
      * @param request request
      * @return AccountDao
      */
-    @PutMapping("/update")
-    public Mono<ResponseEntity<AccountDao>> updateAccount(@RequestBody Mono<RequestUpdateAccount> request){
+    @PutMapping(value="/update",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Mono<AccountDao> updateAccount(@RequestBody Mono<RequestUpdateAccount> request){
         return request.flatMap(account -> {
-            return accountService.update(account).map(p -> {
-                log.info("Cuenta actualizada con exito");
-                return ResponseEntity
-                        .created(URI.create(""))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(p);
-            });
+            return accountService.update(account)
+                    .doOnSuccess(v -> log.info("Cuenta actualizada con exito"));
         });
     }
 
