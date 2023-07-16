@@ -8,5 +8,5 @@ import reactor.core.publisher.Mono;
 
 public interface AccountStrategy {
     Mono<Boolean> verifyAccount(Flux<AccountDao> listAccount);
-    Mono<Boolean> verifyClient(Flux<AccountDao> listaAccount, Mono<AccountCategory> accountCategory, String idClient, Flux<CreditDao> listCredit);
+    Mono<Boolean> verifyClient(Flux<AccountDao> listaAccount, Mono<AccountCategory> accountCategory, Flux<CreditDao> listCredit);
 }

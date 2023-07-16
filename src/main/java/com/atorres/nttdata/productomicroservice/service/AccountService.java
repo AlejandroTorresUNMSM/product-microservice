@@ -52,7 +52,7 @@ public class AccountService {
                     Flux<AccountDao> accountAll = this.getAllAccountsByClient(clientId).concatWith(Flux.just(requestMapper.accountToDao(requestAccount)));
                     //seleccionamos la estrategia para el tipo de cliente
                     AccountStrategy strategy = accountStrategyFactory.getStrategy(clientdao.getTypeClient());
-                    return strategy.verifyClient(accountAll,Mono.just(requestAccount.getAccountCategory()),clientId,this.getAllCredit(clientId))
+                    return strategy.verifyClient(accountAll,Mono.just(requestAccount.getAccountCategory()),this.getAllCredit(clientId))
                             .flatMap(exist -> !exist ? Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La cuenta no cumplen los requisitos"))
                                     : accountRepository.save(requestMapper.accountToDao(requestAccount)).flatMap(accountDao -> {
                               //guardamos la relacion client-product

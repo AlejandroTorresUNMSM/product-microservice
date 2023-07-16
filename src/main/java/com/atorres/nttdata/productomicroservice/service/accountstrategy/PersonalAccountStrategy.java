@@ -22,10 +22,10 @@ import reactor.core.publisher.Mono;
 public class PersonalAccountStrategy implements AccountStrategy{
 
     @Override
-    public Mono<Boolean> verifyClient(Flux<AccountDao> listaAccount, Mono<AccountCategory> accountCategory, String idClient,Flux<CreditDao> listCredit){
+    public Mono<Boolean> verifyClient(Flux<AccountDao> listaAccount, Mono<AccountCategory> accountCategory,Flux<CreditDao> listCredit){
         return accountCategory.filter(enumValue -> enumValue.equals(AccountCategory.vip) || enumValue.equals(AccountCategory.normal))
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"Las cuentas personales no pueden ser MYPE")))
-                .flatMap(enumValue -> enumValue.equals(AccountCategory.vip)? verifyVip(idClient,listaAccount,listCredit) : Mono.just(true))
+                .flatMap(enumValue -> enumValue.equals(AccountCategory.vip)? verifyVip(listaAccount,listCredit) : Mono.just(true))
                 .single()
                 .flatMap(band -> !band ? Mono.just(false) : verifyAccount(listaAccount))
                 .doOnNext(value -> log.info("verifyClient: "+value.toString()));
@@ -41,7 +41,7 @@ public class PersonalAccountStrategy implements AccountStrategy{
                 .flatMap(value -> value ? Mono.just(true) : Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "Cliente personal solo puede tener 1 cuenta de cada una")));
     }
 
-    public Mono<Boolean> verifyVip(String idClient,Flux<AccountDao> listAccount,Flux<CreditDao> listCredit){
+    public Mono<Boolean> verifyVip(Flux<AccountDao> listAccount,Flux<CreditDao> listCredit){
         return listCredit.any(credit -> true)
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"El cliente VIP debe tener al menos un credito")))
                 .flatMap(ac -> ac ? this.verifyVipAccount(listAccount) : Mono.just(false))
