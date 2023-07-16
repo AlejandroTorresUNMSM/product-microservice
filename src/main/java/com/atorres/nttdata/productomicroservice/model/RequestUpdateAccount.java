@@ -2,9 +2,11 @@ package com.atorres.nttdata.productomicroservice.model;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 public class RequestUpdateAccount {
-    private Double balance;
+    private BigDecimal balance;
     private String accountId;
     private String clientId;
 }

@@ -8,6 +8,8 @@ import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
+
 @Data
 @Document("account")
 @Builder
@@ -16,6 +18,6 @@ public class AccountDao {
     @Id
     private String id;
     private AccountType type;
-    private Double balance;
+    private BigDecimal balance;
     private AccountCategory accountCategory;
 }

@@ -5,11 +5,13 @@ import com.atorres.nttdata.productomicroservice.utils.AccountType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 public class RequestAccount {
     @JsonProperty("type")
     private AccountType type;
-    private Double balance;
+    private BigDecimal balance;
     @JsonProperty("category")
     private AccountCategory accountCategory;
 }

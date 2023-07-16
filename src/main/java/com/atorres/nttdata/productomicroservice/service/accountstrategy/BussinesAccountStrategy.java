@@ -27,7 +27,7 @@ public class BussinesAccountStrategy implements  AccountStrategy{
     @Override
     public Mono<Boolean> verifyAccount(Flux<AccountDao> listAccount) {
         return listAccount
-                .all(product -> product.getType().equals(AccountType.CC) && product.getBalance()>=0)
+                .all(product -> product.getType().equals(AccountType.CC) && product.getBalance().doubleValue()>=0)
                 .flatMap(exist -> exist.equals(Boolean.FALSE) ? Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "Los clientes bussines solo pueden tener cuentas CC")) : Mono.just(Boolean.TRUE));
     }
 

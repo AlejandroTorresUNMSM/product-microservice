@@ -50,7 +50,7 @@ public class PersonalAccountStrategy implements AccountStrategy{
 
     public Mono<Boolean> verifyVipAccount(Flux<AccountDao> listAccount) {
         return listAccount
-                .filter(account -> account.getBalance() >=500 && account.getType().equals(AccountType.CA))
+                .filter(account -> account.getBalance().doubleValue() >=500 && account.getType().equals(AccountType.CA))
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"El cliente VIP debe tener una cuenta CA con minimo 500 soles")))
                 .doOnNext(value -> log.info("verifyVipAccount: "+value.toString()))
                 .hasElements();

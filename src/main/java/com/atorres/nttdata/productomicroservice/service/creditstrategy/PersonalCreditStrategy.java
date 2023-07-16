@@ -11,7 +11,7 @@ public class PersonalCreditStrategy implements CreditStrategy{
     public Mono<Boolean> verifyCredit(Flux<CreditDao> listCredit) {
         return listCredit
                 .single()
-                .map(creditDao ->  creditDao.getBalance() <=1000)
+                .map(creditDao ->  creditDao.getBalance().doubleValue() <=1000)
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NOT_FOUND,"No cumple con el balance")))
                 .onErrorResume( error ->Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "Personal solo debe tener 1 credito")));
     }
