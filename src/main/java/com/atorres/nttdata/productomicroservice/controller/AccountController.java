@@ -26,6 +26,18 @@ public class AccountController {
     AccountService accountService;
 
     /**
+     * Metodo para traer la cuenta
+     * @param productId id producto
+     * @return cuenta
+     */
+    @GetMapping(value = "/{productId}",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Mono<AccountDao> getAccount(
+            @PathVariable String productId){
+        return accountService.getAccount(productId)
+                .doOnNext(account -> log.info("Cuenta encontrada con exito"));
+    }
+
+    /**
      * Endpoint para obtener todas las cuentas de un cliente
      * @param id id del cliente
      * @return devuelve una lista de cuentas
@@ -55,7 +67,7 @@ public class AccountController {
      * @param requestClientproduct request
      * @return void
      */
-    @DeleteMapping(value ="/",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @DeleteMapping(value ="/delete",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Void> deleteAccount(@RequestBody RequestClientproduct requestClientproduct){
         return accountService.delete(requestClientproduct)
                 .doOnNext(v -> log.info("Cuenta eliminada con exito"));

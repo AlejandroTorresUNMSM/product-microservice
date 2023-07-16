@@ -37,6 +37,13 @@ public class AccountService {
     @Autowired
     private CreditService creditService;
 
+    public Mono<AccountDao> getAccount(String productId) {
+      return clientProductRepository.findAll()
+              .filter(cp -> cp.getProduct().equals(productId))
+              .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NOT_FOUND, "No existe el producto")))
+              .single()
+              .flatMap(cp -> accountRepository.findById(productId));
+    }
     /**
      * Funcion que crear una cuenta segun el id del cliente y el requestaccount
      * @param clientId id del cliente
@@ -51,6 +58,7 @@ public class AccountService {
                     //obtenemos todas las cuentas agregando la nueva
                     Flux<AccountDao> accountAll = this.getAllAccountsByClient(clientId).concatWith(Flux.just(requestMapper.accountToDao(requestAccount)));
                     //seleccionamos la estrategia para el tipo de cliente
+
                     AccountStrategy strategy = accountStrategyFactory.getStrategy(clientdao.getTypeClient());
                     return strategy.verifyClient(accountAll,Mono.just(requestAccount.getAccountCategory()),this.getAllCredit(clientId))
                             .flatMap(exist -> !exist ? Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La cuenta no cumplen los requisitos"))
