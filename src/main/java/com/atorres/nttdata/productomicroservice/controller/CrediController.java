@@ -24,12 +24,23 @@ public class CrediController {
     @Autowired
     CreditService creditService;
 
-    @GetMapping("/client/{id}")
+    /**
+     * Endpoint para traer todos los creditos de un cliente
+     * @param id id cliente
+     * @return lista creditos
+     */
+    @GetMapping( value = "/client/{id}",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<CreditDao> getAllCreditClient(@PathVariable String id){
         return creditService.getAllCreditByClient(id);
     }
 
-    @PostMapping("/client/{id}")
+    /**
+     * Endpoint para crear un credito
+     * @param id id cliente
+     * @param requestCredit request
+     * @return clientproduct
+     */
+    @PostMapping(value = "/client/{id}",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Mono<ResponseEntity<ClientProductDao>> createCredit(@PathVariable String id, @RequestBody Mono<RequestCredit> requestCredit){
         return requestCredit.flatMap(credit -> creditService.createCredit(id,credit).map(p -> {
                 log.info("Credito Creada con exito");
@@ -40,7 +51,12 @@ public class CrediController {
             }));
     }
 
-    @DeleteMapping("")
+    /**
+     * Metodo para eliminar un credito
+     * @param request request
+     * @return vacio
+     */
+    @DeleteMapping(value = "",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Void> deleteCredit(@RequestBody RequestClientproduct request){
         return creditService.delete(request);
     }

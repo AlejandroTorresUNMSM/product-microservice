@@ -20,7 +20,13 @@ import reactor.core.publisher.Mono;
 @Component
 @Slf4j
 public class PersonalAccountStrategy implements AccountStrategy{
-
+    /**
+     * Metodo que verifica si el cliente cumple como personal
+     * @param listaAccount lista cuentas del cliente
+     * @param accountCategory categoria de la cuenta ingresada
+     * @param listCredit lista de creditos
+     * @return boolean
+     */
     @Override
     public Mono<Boolean> verifyClient(Flux<AccountDao> listaAccount, Mono<AccountCategory> accountCategory,Flux<CreditDao> listCredit){
         return accountCategory.filter(enumValue -> enumValue.equals(AccountCategory.vip) || enumValue.equals(AccountCategory.normal))
@@ -31,6 +37,11 @@ public class PersonalAccountStrategy implements AccountStrategy{
                 .doOnNext(value -> log.info("verifyClient: "+value.toString()));
     }
 
+    /**
+     * Metodo que verifica que las cuenta personal
+     * @param listAccount lista cuentas
+     * @return boolean
+     */
     @Override
     public Mono<Boolean> verifyAccount(Flux<AccountDao> listAccount) {
         return listAccount
@@ -41,6 +52,12 @@ public class PersonalAccountStrategy implements AccountStrategy{
                 .flatMap(value -> Boolean.TRUE.equals(value) ? Mono.just(true) : Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "Cliente personal solo puede tener 1 cuenta de cada una")));
     }
 
+    /**
+     * Metodo que verifica si el cliente puede crear un producto vip , primero verifica si linea de credito
+     * @param listAccount lista cuentas
+     * @param listCredit lista creditos
+     * @return boolean
+     */
     public Mono<Boolean> verifyVip(Flux<AccountDao> listAccount,Flux<CreditDao> listCredit){
         return listCredit.any(credit -> true)
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"El cliente VIP debe tener al menos un credito")))
@@ -48,6 +65,11 @@ public class PersonalAccountStrategy implements AccountStrategy{
                 .doOnNext(value -> log.info("verifyVip: "+value.toString()));
     }
 
+    /**
+     * Metodo que verifica si sus cuentas califican para un producto vip
+     * @param listAccount lista cuentas
+     * @return boolean
+     */
     public Mono<Boolean> verifyVipAccount(Flux<AccountDao> listAccount) {
         return listAccount
                 .filter(account -> account.getBalance().doubleValue() >=500 && account.getType().equals(AccountType.CA))

@@ -19,48 +19,79 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class CreditService {
-    @Autowired
-    private WebClientMicroservice webClientMicroservice;
-    @Autowired
-    private ClientProductRepository clientProductRepository;
-    @Autowired
-    private RequestMapper requestMapper;
-    @Autowired
-    private CreditRepository creditRepository;
-    @Autowired
-    private CreditStrategyFactory strategy;
+  /**
+   *Cliente que conecta client_microservice
+   */
+  @Autowired
+  private WebClientMicroservice webClientMicroservice;
+	/**
+	 * Repositorio que guarda la relacion cliente-producto
+	 */
+  @Autowired
+  private ClientProductRepository clientProductRepository;
+	/**
+	 * Mapper para creditosDao
+	 */
+  @Autowired
+  private RequestMapper requestMapper;
+	/**
+	 * Repositorio para creditos
+	 */
+  @Autowired
+  private CreditRepository creditRepository;
+	/**
+	 * Clase que divide las reglas para los creditos segun el tipo cliente
+	 */
+  @Autowired
+  private CreditStrategyFactory strategy;
 
-    public Mono<ClientProductDao> createCredit(String clientId, RequestCredit requestCredit) {
-        //obtenemos el cliente
-        return webClientMicroservice.getClientById(clientId)
-                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NOT_FOUND,"El cliente no existe")))
-                .flatMap(clientdao -> {
-                    //obtenemos todas las cuentas agregando la nueva
-                    Flux<CreditDao> creditAll = this.getAllCreditByClient(clientId).concatWith(Flux.just(requestMapper.requestToDao(requestCredit)));
-                    //seleccionamos la estrategia para el tipo de cliente
-                    CreditStrategy strategyCredit = strategy.getStrategy(clientdao.getTypeClient());
-                    return strategyCredit.verifyCredit(creditAll).flatMap(exist -> Boolean.FALSE.equals(exist) ? Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "El credito no cumplen los requisitos"))
-                            : creditRepository.save(requestMapper.requestToDao(requestCredit)).flatMap(accountDao -> clientProductRepository.save(requestMapper.cpToDaoCredit(clientdao, accountDao))));
-                });
-    }
+	/**
+	 * Metodo que crea un credito
+	 * @param clientId id cliente
+	 * @param requestCredit request
+	 * @return clientproduct
+	 */
+  public Mono<ClientProductDao> createCredit(String clientId, RequestCredit requestCredit) {
+    //obtenemos el cliente
+    return webClientMicroservice.getClientById(clientId)
+            .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NOT_FOUND, "El cliente no existe")))
+            .flatMap(clientdao -> {
+              //obtenemos todas las cuentas agregando la nueva
+              Flux<CreditDao> creditAll = this.getAllCreditByClient(clientId).concatWith(Flux.just(requestMapper.requestToDao(requestCredit)));
+              //seleccionamos la estrategia para el tipo de cliente
+              CreditStrategy strategyCredit = strategy.getStrategy(clientdao.getTypeClient());
+              return strategyCredit.verifyCredit(creditAll).flatMap(exist -> Boolean.FALSE.equals(exist) ? Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "El credito no cumplen los requisitos"))
+                      : creditRepository.save(requestMapper.requestToDao(requestCredit)).flatMap(accountDao -> clientProductRepository.save(requestMapper.cpToDaoCredit(clientdao, accountDao))));
+            });
+  }
 
-    public Flux<CreditDao> getAllCreditByClient(String clientId) {
-        return clientProductRepository.findByClient(clientId)
-                .filter(cp -> cp.getCategory().equals("credit"))
-                .flatMap(cp -> creditRepository.findAll().filter(accountDao -> accountDao.getId().equalsIgnoreCase(cp.getProduct())));
-    }
+	/**
+	 * Metodo que trae todos los credito de un cliente
+	 * @param clientId id cliente
+	 * @return credito
+	 */
+  public Flux<CreditDao> getAllCreditByClient(String clientId) {
+    return clientProductRepository.findByClient(clientId)
+            .filter(cp -> cp.getCategory().equals("credit"))
+            .flatMap(cp -> creditRepository.findAll().filter(accountDao -> accountDao.getId().equalsIgnoreCase(cp.getProduct())));
+  }
 
-    public Flux<Void> delete(RequestClientproduct requestClientproduct) {
-        return clientProductRepository.findAll()
-                .filter(cp -> cp.getCategory().equals("credit"))
-                .filter(cp -> cp.getClient().equals(requestClientproduct.getClient()))
-                .filter(cp -> cp.getProduct().equals(requestClientproduct.getProduct()))
-                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NOT_FOUND,"No se encontro la relacion client-producto")))
-                .flatMap(cp -> creditRepository.findById(cp.getProduct())
-                        .switchIfEmpty(Mono.defer(() ->Mono.error(new CustomException(HttpStatus.NOT_FOUND, "Existe la relacion pero no se encontró el credito"))))
-                        .flatMap(account -> clientProductRepository.deleteById(cp.getId())
-                                .then(creditRepository.deleteById(cp.getProduct())))
+	/**
+	 * Metodo que elimina un credito
+	 * @param requestClientproduct request
+	 * @return vacio
+	 */
+  public Flux<Void> delete(RequestClientproduct requestClientproduct) {
+    return clientProductRepository.findAll()
+            .filter(cp -> cp.getCategory().equals("credit"))
+            .filter(cp -> cp.getClient().equals(requestClientproduct.getClient()))
+            .filter(cp -> cp.getProduct().equals(requestClientproduct.getProduct()))
+            .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NOT_FOUND, "No se encontro la relacion client-producto")))
+            .flatMap(cp -> creditRepository.findById(cp.getProduct())
+                    .switchIfEmpty(Mono.defer(() -> Mono.error(new CustomException(HttpStatus.NOT_FOUND, "Existe la relacion pero no se encontró el credito"))))
+                    .flatMap(account -> clientProductRepository.deleteById(cp.getId())
+                            .then(creditRepository.deleteById(cp.getProduct())))
 
-                );
-    }
+            );
+  }
 }

@@ -1,22 +1,18 @@
 package com.atorres.nttdata.productomicroservice.controller;
 
-import com.atorres.nttdata.productomicroservice.client.WebClientMicroservice;
 import com.atorres.nttdata.productomicroservice.model.RequestAccount;
 import com.atorres.nttdata.productomicroservice.model.RequestClientproduct;
 import com.atorres.nttdata.productomicroservice.model.RequestUpdateAccount;
 import com.atorres.nttdata.productomicroservice.model.dao.AccountDao;
-import com.atorres.nttdata.productomicroservice.model.dao.ClientDao;
 import com.atorres.nttdata.productomicroservice.model.dao.ClientProductDao;
 import com.atorres.nttdata.productomicroservice.service.AccountService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.net.URI;
 
 @RestController
 @RequestMapping("/api/account")
