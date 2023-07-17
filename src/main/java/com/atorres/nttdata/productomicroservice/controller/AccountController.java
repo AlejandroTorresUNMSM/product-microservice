@@ -56,10 +56,8 @@ public class AccountController {
      */
     @PostMapping(value = "/client/{id}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Mono<ClientProductDao> createAccount(@PathVariable String id, @RequestBody Mono<RequestAccount> requestAccount){
-        return requestAccount.flatMap(account -> {
-            return accountService.createAccount(id,account)
-                    .doOnSuccess(v -> log.info("Cuenta creada con exito"));
-        });
+        return requestAccount.flatMap(account -> accountService.createAccount(id,account)
+                    .doOnSuccess(v -> log.info("Cuenta creada con exito")));
     }
 
     /**
@@ -80,10 +78,8 @@ public class AccountController {
      */
     @PutMapping(value="/update",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Mono<AccountDao> updateAccount(@RequestBody Mono<RequestUpdateAccount> request){
-        return request.flatMap(account -> {
-            return accountService.update(account)
-                    .doOnSuccess(v -> log.info("Cuenta actualizada con exito"));
-        });
+        return request.flatMap(account -> accountService.update(account)
+                    .doOnSuccess(v -> log.info("Cuenta actualizada con exito")));
     }
 
 

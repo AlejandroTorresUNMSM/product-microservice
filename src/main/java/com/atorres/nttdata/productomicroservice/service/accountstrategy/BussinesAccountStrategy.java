@@ -19,7 +19,7 @@ public class BussinesAccountStrategy implements  AccountStrategy{
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"Las cuentas bussines no pueden ser VIP")))
                 .flatMap(enumValue -> enumValue.equals(AccountCategory.mype)? verifyMype(listaAccount,listCredit) : Mono.just(true))
                 .single()
-                .flatMap(band -> !band ? Mono.just(false) : verifyAccount(listaAccount));
+                .flatMap(band -> Boolean.FALSE.equals(band) ? Mono.just(false) : verifyAccount(listaAccount));
     }
     @Override
     public Mono<Boolean> verifyAccount(Flux<AccountDao> listAccount) {
@@ -30,7 +30,7 @@ public class BussinesAccountStrategy implements  AccountStrategy{
 
     public Mono<Boolean> verifyMype(Flux<AccountDao> listAccount,Flux<CreditDao> listCredit) {
         return listCredit.any(credit -> true)
-                .flatMap(ac -> ac ? verifyMypeAccount(listAccount) : Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"El cliente MYPE tiene que tener al menos un credito")));
+                .flatMap(ac -> Boolean.TRUE.equals(ac) ? verifyMypeAccount(listAccount) : Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"El cliente MYPE tiene que tener al menos un credito")));
     }
 
     public Mono<Boolean> verifyMypeAccount(Flux<AccountDao> listAccount){

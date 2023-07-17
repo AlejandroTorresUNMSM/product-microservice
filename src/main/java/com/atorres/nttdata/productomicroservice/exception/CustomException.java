@@ -1,12 +1,14 @@
 package com.atorres.nttdata.productomicroservice.exception;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.http.HttpStatus;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class CustomException extends RuntimeException{
 
-    private HttpStatus status;
+    private final HttpStatus status;
 
     public CustomException(HttpStatus status, String message) {
         super(message);

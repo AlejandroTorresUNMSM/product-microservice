@@ -11,6 +11,6 @@ public class BussinesCreditStrategy implements CreditStrategy{
     public Mono<Boolean> verifyCredit(Flux<CreditDao> listCredit) {
         return listCredit
                 .all(creditDao ->  creditDao.getBalance().doubleValue() <=10000)
-                .flatMap(  exist -> exist ? Mono.just(Boolean.TRUE):Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"El credito no debe pasar 10 000")));
+                .flatMap(  exist -> Boolean.TRUE.equals(exist) ? Mono.just(Boolean.TRUE):Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"El credito no debe pasar 10 000")));
     }
 }

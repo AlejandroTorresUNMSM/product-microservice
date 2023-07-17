@@ -2,15 +2,12 @@ package com.atorres.nttdata.productomicroservice.service;
 
 import com.atorres.nttdata.productomicroservice.client.WebClientMicroservice;
 import com.atorres.nttdata.productomicroservice.exception.CustomException;
-import com.atorres.nttdata.productomicroservice.model.RequestAccount;
 import com.atorres.nttdata.productomicroservice.model.RequestClientproduct;
 import com.atorres.nttdata.productomicroservice.model.RequestCredit;
-import com.atorres.nttdata.productomicroservice.model.dao.AccountDao;
 import com.atorres.nttdata.productomicroservice.model.dao.ClientProductDao;
 import com.atorres.nttdata.productomicroservice.model.dao.CreditDao;
 import com.atorres.nttdata.productomicroservice.repository.ClientProductRepository;
 import com.atorres.nttdata.productomicroservice.repository.CreditRepository;
-import com.atorres.nttdata.productomicroservice.service.accountstrategy.AccountStrategy;
 import com.atorres.nttdata.productomicroservice.service.creditstrategy.CreditStrategy;
 import com.atorres.nttdata.productomicroservice.service.creditstrategy.CreditStrategyFactory;
 import com.atorres.nttdata.productomicroservice.utils.RequestMapper;
@@ -42,11 +39,8 @@ public class CreditService {
                     Flux<CreditDao> creditAll = this.getAllCreditByClient(clientId).concatWith(Flux.just(requestMapper.requestToDao(requestCredit)));
                     //seleccionamos la estrategia para el tipo de cliente
                     CreditStrategy strategyCredit = strategy.getStrategy(clientdao.getTypeClient());
-                    return strategyCredit.verifyCredit(creditAll).flatMap(exist -> !exist ? Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "El credito no cumplen los requisitos"))
-                            : creditRepository.save(requestMapper.requestToDao(requestCredit)).flatMap(accountDao -> {
-                        //guardamos la relacion client-product
-                        return clientProductRepository.save(requestMapper.cpToDaoCredit(clientdao, accountDao));
-                    }));
+                    return strategyCredit.verifyCredit(creditAll).flatMap(exist -> Boolean.FALSE.equals(exist) ? Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "El credito no cumplen los requisitos"))
+                            : creditRepository.save(requestMapper.requestToDao(requestCredit)).flatMap(accountDao -> clientProductRepository.save(requestMapper.cpToDaoCredit(clientdao, accountDao))));
                 });
     }
 

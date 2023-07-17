@@ -27,7 +27,7 @@ public class PersonalAccountStrategy implements AccountStrategy{
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"Las cuentas personales no pueden ser MYPE")))
                 .flatMap(enumValue -> enumValue.equals(AccountCategory.vip)? verifyVip(listaAccount,listCredit) : Mono.just(true))
                 .single()
-                .flatMap(band -> !band ? Mono.just(false) : verifyAccount(listaAccount))
+                .flatMap(band -> Boolean.FALSE.equals(band) ? Mono.just(false) : verifyAccount(listaAccount))
                 .doOnNext(value -> log.info("verifyClient: "+value.toString()));
     }
 
@@ -37,14 +37,14 @@ public class PersonalAccountStrategy implements AccountStrategy{
                 .groupBy(AccountDao::getType)
                 .flatMap(group -> group.count().map(count -> Pair.of(group.key(), count)))
                 .collectList()
-                .map(groups -> groups.size() <= 3 && groups.size() >= 1 && groups.stream().allMatch(pair -> pair.getSecond() == 1))
-                .flatMap(value -> value ? Mono.just(true) : Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "Cliente personal solo puede tener 1 cuenta de cada una")));
+                .map(groups -> groups.size() <= 3 && !groups.isEmpty() && groups.stream().allMatch(pair -> pair.getSecond() == 1))
+                .flatMap(value -> Boolean.TRUE.equals(value) ? Mono.just(true) : Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "Cliente personal solo puede tener 1 cuenta de cada una")));
     }
 
     public Mono<Boolean> verifyVip(Flux<AccountDao> listAccount,Flux<CreditDao> listCredit){
         return listCredit.any(credit -> true)
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"El cliente VIP debe tener al menos un credito")))
-                .flatMap(ac -> ac ? this.verifyVipAccount(listAccount) : Mono.just(false))
+                .flatMap(ac -> Boolean.FALSE.equals(ac) ? this.verifyVipAccount(listAccount) : Mono.just(false))
                 .doOnNext(value -> log.info("verifyVip: "+value.toString()));
     }
 

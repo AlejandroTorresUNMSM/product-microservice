@@ -45,6 +45,6 @@ public class RequestMapper {
     }
 
     private String generateId(){
-        return java.util.UUID.randomUUID().toString().replaceAll("-","");
+        return java.util.UUID.randomUUID().toString().replace("-","");
     }
 }

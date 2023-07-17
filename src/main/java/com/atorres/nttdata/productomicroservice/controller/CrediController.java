@@ -31,15 +31,13 @@ public class CrediController {
 
     @PostMapping("/client/{id}")
     public Mono<ResponseEntity<ClientProductDao>> createCredit(@PathVariable String id, @RequestBody Mono<RequestCredit> requestCredit){
-        return requestCredit.flatMap(credit -> {
-            return creditService.createCredit(id,credit).map(p -> {
+        return requestCredit.flatMap(credit -> creditService.createCredit(id,credit).map(p -> {
                 log.info("Credito Creada con exito");
                 return ResponseEntity
                         .created(URI.create("/credit/".concat(id)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(p);
-            });
-        });
+            }));
     }
 
     @DeleteMapping("")
