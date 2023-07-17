@@ -37,6 +37,8 @@ public class AccountService {
     @Autowired
     private CreditService creditService;
 
+    private static final String ACCOUNT = "account";
+
     public Mono<AccountDao> getAccount(String productId) {
       return clientProductRepository.findAll()
               .filter(cp -> cp.getProduct().equals(productId))
@@ -61,11 +63,9 @@ public class AccountService {
 
                     AccountStrategy strategy = accountStrategyFactory.getStrategy(clientdao.getTypeClient());
                     return strategy.verifyClient(accountAll,Mono.just(requestAccount.getAccountCategory()),this.getAllCredit(clientId))
-                            .flatMap(exist -> !exist ? Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La cuenta no cumplen los requisitos"))
-                                    : accountRepository.save(requestMapper.accountToDao(requestAccount)).flatMap(accountDao -> {
-                              //guardamos la relacion client-product
-                              return clientProductRepository.save(requestMapper.cpToDaoAccount(clientdao, accountDao));
-                            }));
+                            .flatMap(exist -> Boolean.FALSE.equals(exist) ? Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La cuenta no cumplen los requisitos"))
+                                    : accountRepository.save(requestMapper.accountToDao(requestAccount))
+                                    .flatMap(accountDao -> clientProductRepository.save(requestMapper.cpToDaoAccount(clientdao, accountDao))));
                 });
     }
 
@@ -76,7 +76,7 @@ public class AccountService {
      */
     public Flux<AccountDao> getAllAccountsByClient(String clientId) {
         return clientProductRepository.findByClient(clientId)
-                .filter(cp -> cp.getCategory().equals("account"))
+                .filter(cp -> cp.getCategory().equals(ACCOUNT))
                 .flatMap(cp -> accountRepository.findAll().filter(accountDao -> accountDao.getId().equalsIgnoreCase(cp.getProduct())));
     }
 
@@ -87,7 +87,7 @@ public class AccountService {
      */
     public Flux<Void> delete(RequestClientproduct requestClientproduct) {
         return clientProductRepository.findAll()
-                .filter(cp -> cp.getCategory().equals("account"))
+                .filter(cp -> cp.getCategory().equals(ACCOUNT))
                 .filter(cp -> cp.getClient().equals(requestClientproduct.getClient()))
                 .filter(cp -> cp.getProduct().equals(requestClientproduct.getProduct()))
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NOT_FOUND,"No se encontro la relacion client-producto")))
@@ -101,8 +101,7 @@ public class AccountService {
 
     public Mono<AccountDao> update(RequestUpdateAccount request){
         return clientProductRepository.findAll()
-                .filter(cp -> cp.getCategory().equals("account"))
-                .filter(cp -> cp.getClient().equals(request.getClientId()))
+                .filter(cp -> cp.getCategory().equals(ACCOUNT))
                 .filter(cp -> cp.getProduct().equals(request.getAccountId()))
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NOT_FOUND, "No la relacion client-producto")))
                 .single()

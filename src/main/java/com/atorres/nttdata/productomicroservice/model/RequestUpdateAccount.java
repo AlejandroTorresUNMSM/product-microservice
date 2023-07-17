@@ -8,5 +8,4 @@ import java.math.BigDecimal;
 public class RequestUpdateAccount {
     private BigDecimal balance;
     private String accountId;
-    private String clientId;
 }
